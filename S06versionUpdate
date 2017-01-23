@@ -1,0 +1,55 @@
+#!/bin/bash
+####################################################################
+# ------------------------------------------------------------------
+#          [Author: RanjithGeorge] 
+#	   
+#          Title : versionUpdate.sh
+# 
+#          Description:
+#          This script updates the version number to the Database.
+#	    	
+#          Dependency:.version file
+#     
+# ------------------------------------------------------------------
+####################################################################
+
+
+
+#*****************************************************************#
+# --- Version update --------------------------------------------
+#*****************************************************************#
+
+#read version
+touch /root/ESSE/sourcecode/Firmware/.version
+touch /.version
+OS_VERSION=`cat /.version`
+FIRMWARE_VERSION=`cat /root/ESSE/sourcecode/Firmware/.version`
+DB_VERSION=`cat /usr/var/lib/couchdb/.version`
+
+OS_UPDATE="\"sysOSVersion\":\"$OS_VERSION\""
+FIRMWARE_UPDATE="\"sysApplicationVersion\":\"$FIRMWARE_VERSION\""
+DB_UPDATE="\"sysDBVersion\":\"$DB_VERSION\"}"
+
+
+DOC_REV=`curl -X GET http://admin:2QHrHIQo@127.0.0.1:5984/system_info/controllerInfoVersionInfo |  awk -F',' '{print $2}' | awk -F'"' '{print $4}'`
+echo $DOC_REV
+DB_VERSION="\"_rev\":\"$DOC_REV\""
+
+JSON_STR=`curl -X GET http://admin:2QHrHIQo@127.0.0.1:5984/system_info/controllerInfoVersionInfo`
+echo $JSON_STR
+JSON_FMTD=`echo $JSON_STR | sed 's/[^,]*/'$DB_VERSION'/'2`
+JSON_FMTD=`echo $JSON_FMTD | sed 's/[^,]*/'$OS_UPDATE'/'7`
+JSON_FMTD=`echo $JSON_FMTD | sed 's/[^,]*/'$FIRMWARE_UPDATE'/'5`
+JSON_FMTD=`echo $JSON_FMTD | sed 's/[^,]*/'$DB_UPDATE'/'8`
+echo 
+exe="curl -X PUT http://admin:2QHrHIQo@127.0.0.1:5984/system_info/controllerInfoVersionInfo -H 'Content-Type: application/json'  -d $JSON_FMTD"
+echo $exe
+$exe
+
+
+#*****************************************************************#
+# --- END --------------------------------------------
+#*****************************************************************#
+                                       
+
+
